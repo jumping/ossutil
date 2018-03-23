@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"time"
+	"unicode"
 
 	oss "github.com/aliyun/aliyun-oss-go-sdk/oss"
 )
@@ -436,4 +437,12 @@ func filterObjectsFromChanWithPatterns(chObjects <-chan objectInfoType, filters 
 	vsf := matchFiltersForObjects(objects, filters)
 	makeObjectChanFromArray(vsf, dstObjs)
 	defer close(dstObjs)
+}
+
+//LcFirst convert the first character to Lower
+func LcFirst(str string) string {
+	for i, v := range str {
+		return string(unicode.ToLower(v)) + str[i+1:]
+	}
+	return ""
 }

@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"reflect"
 	"strconv"
 	"strings"
 
 	configparser "github.com/alyu/configparser"
+	//"github.com/davecgh/go-spew/spew"
 )
 
 // sections in config file
@@ -75,6 +77,28 @@ func LoadConfig(configFile string) (OptionMapType, error) {
 	return configMap, nil
 }
 
+// LoadRAM read credential
+func LoadRAM() (OptionMapType, error) {
+	var err error
+	configMap := OptionMapType{}
+
+	ram := GetCredential()
+	if (RAMToken{}) == ram {
+		return nil, err
+	}
+
+	t := reflect.TypeOf(ram)
+	v := reflect.ValueOf(ram)
+
+	for i := 0; i < t.NumField(); i++ {
+		configMap[LcFirst(t.Field(i).Name)] = v.Field(i).Interface()
+	}
+	configMap["language"] = "EN"
+
+	//spew.Dump(configMap)
+	return configMap, nil
+}
+
 func readConfigFromFile(configFile string) (OptionMapType, error) {
 	configFile = DecideConfigFile(configFile)
 
@@ -108,6 +132,7 @@ func readConfigFromFile(configFile string) (OptionMapType, error) {
 			}
 		}
 	}
+	//spew.Dump(configMap)
 	return configMap, nil
 }
 

@@ -2,9 +2,10 @@ package lib
 
 import (
 	"fmt"
-	configparser "github.com/alyu/configparser"
 	"os"
 	"strings"
+
+	configparser "github.com/alyu/configparser"
 )
 
 var specChineseConfig = SpecText{
@@ -474,6 +475,7 @@ func (cc *ConfigCommand) runCommandNonInteractive(configFile, language string) e
 			section.Add(name, val)
 		}
 	}
+
 	if err := configparser.Save(config, configFile); err != nil {
 		return err
 	}

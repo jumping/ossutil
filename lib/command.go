@@ -115,9 +115,14 @@ func (cmd *Command) loadConfig(configFile string, cmder interface{}) error {
 		return cmdder.rewriteLoadConfig(configFile)
 	}
 	var err error
-	if cmd.configOptions, err = LoadConfig(configFile); err != nil && cmd.needConfigFile() {
+	//if cmd.configOptions, err = LoadConfig(configFile); err != nil && cmd.needConfigFile() {
+	if cmd.configOptions, err = LoadConfig(configFile); err != nil {
+		if cmd.configOptions, err = LoadRAM(); err != nil {
+			cmd.needConfigFile()
+		}
 		return err
 	}
+
 	return nil
 }
 

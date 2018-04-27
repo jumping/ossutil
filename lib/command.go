@@ -47,6 +47,7 @@ type Command struct {
 	args             []string
 	options          OptionMapType
 	configOptions    OptionMapType
+	ramOptions       OptionMapType
 }
 
 // Commander is the interface of all commands
@@ -70,6 +71,8 @@ func (cmd *Command) Init(args []string, options OptionMapType, cmder interface{}
 	cmd.args = args
 	cmd.options = options
 	cmd.configOptions = OptionMapType{}
+
+	cmd.ramOptions, _ = LoadRAM()
 
 	if err := cmd.checkArgs(); err != nil {
 		return err
@@ -114,13 +117,14 @@ func (cmd *Command) loadConfig(configFile string, cmder interface{}) error {
 	if cmdder, ok := cmder.(RewriteLoadConfiger); ok {
 		return cmdder.rewriteLoadConfig(configFile)
 	}
+
 	var err error
-	cmd.configOptions, _ = LoadRAM()
 	//if cmd.configOptions, err = LoadConfig(configFile); err != nil && cmd.needConfigFile() {
-	if _, ok := os.Stat(configFile); ok {
-		cmd.configOptions, err = LoadConfig(configFile)
-		err != nil && cmd.needConfigFile()
+
+	if cmd.configOptions, err = LoadConfig(configFile); err != nil {
+		cmd.needConfigFile()
 	}
+	//spew.Dump(cmd.configOptions)
 
 	return nil
 }
@@ -160,6 +164,21 @@ func (cmd *Command) assembleOptions(cmder interface{}) {
 	if cmdder, ok := cmder.(RewriteAssembleOptioner); ok {
 		cmdder.rewriteAssembleOptions()
 		return
+	}
+
+	for name, option := range cmd.ramOptions {
+		if _, ok := cmd.options[name]; ok {
+			if OptionMap[name].optionType != OptionTypeFlagTrue {
+				if val, _ := GetString(name, cmd.options); val == "" {
+					opval := option.(string)
+					cmd.options[name] = &opval
+					delete(cmd.ramOptions, name)
+				} else if name == OptionEndpoint {
+					delete(cmd.ramOptions, BucketCnameSection)
+					delete(cmd.ramOptions, BucketEndpointSection)
+				}
+			}
+		}
 	}
 
 	for name, option := range cmd.configOptions {

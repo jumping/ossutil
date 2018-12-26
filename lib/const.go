@@ -1,8 +1,9 @@
 package lib
 
 import (
-	oss "github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"os"
+
+	oss "github.com/aliyun/aliyun-oss-go-sdk/oss"
 )
 
 // all supported options of ossutil

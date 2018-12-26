@@ -16,6 +16,9 @@ const (
 	GroupTypeAdditionalCommand string = "\nAdditional Commands:\n"
 
 	GroupTypeDeprecatedCommand string = "\nDeprecated Commands:\n"
+
+	//whether overwrite the exist configure, the priority  is : ram < config < command .
+	OverwriteConfig bool = true
 )
 
 // CommandGroups is the array of all group types
@@ -184,8 +187,9 @@ func (cmd *Command) assembleOptions(cmder interface{}) {
 	for name, option := range cmd.configOptions {
 		if _, ok := cmd.options[name]; ok {
 			if OptionMap[name].optionType != OptionTypeFlagTrue {
-				if val, _ := GetString(name, cmd.options); val == "" {
+				if val, _ := GetString(name, cmd.options); val == "" || OverwriteConfig {
 					opval := option.(string)
+					//fmt.Printf("%s update from %#v to %#v", name, cmd.options[name], &opval)
 					cmd.options[name] = &opval
 					delete(cmd.configOptions, name)
 				} else if name == OptionEndpoint {
@@ -200,7 +204,7 @@ func (cmd *Command) assembleOptions(cmder interface{}) {
 		if OptionMap[name].def != "" {
 			switch OptionMap[name].optionType {
 			case OptionTypeInt64:
-				if val, _ := GetString(name, cmd.options); val == "" {
+				if val, _ := GetString(name, cmd.options); val == "" || OverwriteConfig {
 					def, _ := strconv.ParseInt(OptionMap[name].def, 10, 64)
 					cmd.options[name] = &def
 				}
